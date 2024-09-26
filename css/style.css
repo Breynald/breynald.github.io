@@ -10847,7 +10847,7 @@ article.article .content blockquote.pullquote {
 article.article .content blockquote footer strong + cite {
   margin-left: 0.5em;
 }
-article.article .content a img {
+article.article .content img {
   margin: auto;
   display: block;
 }
