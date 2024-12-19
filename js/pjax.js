@@ -28,12 +28,11 @@
     //     // TODO pace start loading animation
     // })
 
-    // Listen for completion of Pjax
-    document.addEventListener('pjax:complete', function() {
-        MathJax.typesetPromise();
-        // return;
-        // TODO pace stop loading animation
-    })
+    // // Listen for completion of Pjax
+    // document.addEventListener('pjax:complete', function() {
+    //     return;
+    //     // TODO pace stop loading animation
+    // })
 
     document.addEventListener('DOMContentLoaded', () => initPjax());
 }());
