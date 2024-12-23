@@ -33,6 +33,14 @@
     //     return;
     //     // TODO pace stop loading animation
     // })
+    
+	// listen pjax:end event in pjax.js
+    document.addEventListener('pjax:end', function () {
+        // MathJax is global, can be used directly
+        MathJax.typesetPromise();
+    });
+
+
 
     document.addEventListener('DOMContentLoaded', () => initPjax());
 }());
