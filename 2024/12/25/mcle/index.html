@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA - Breynald Shelter</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Breynald Shelter"><meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/img/blog.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Breynald Shelter"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="一种新的基于自监督多层次对比学习的VQA自然语言解释模型 (MCLE)，该模型具有语义级、图像级和实例级的事实和反事实样本。MCLE提取判别特征，并将特征空间中的解释与视觉问题和答案对齐，以产生更一致的解释。作者进行了大量的实验和案例研究，以证明提出的方法在两个VQA-NLE基准上的有效性。"><meta property="og:type" content="blog"><meta property="og:title" content="Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA"><meta property="og:url" content="http://example.com/2024/12/25/mcle/"><meta property="og:site_name" content="Breynald Shelter"><meta property="og:description" content="一种新的基于自监督多层次对比学习的VQA自然语言解释模型 (MCLE)，该模型具有语义级、图像级和实例级的事实和反事实样本。MCLE提取判别特征，并将特征空间中的解释与视觉问题和答案对齐，以产生更一致的解释。作者进行了大量的实验和案例研究，以证明提出的方法在两个VQA-NLE基准上的有效性。"><meta property="og:locale" content="en_US"><meta property="og:image" content="https://t.mwm.moe/fj?random=mcle"><meta property="article:published_time" content="2024-12-25T13:14:49.000Z"><meta property="article:modified_time" content="2024-12-25T13:18:10.367Z"><meta property="article:author" content="Breynald"><meta property="article:tag" content="Contrastive Learning"><meta property="article:tag" content="VQA"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://t.mwm.moe/fj?random=mcle"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2024/12/25/mcle/"},"headline":"Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA","image":[],"datePublished":"2024-12-25T13:14:49.000Z","dateModified":"2024-12-25T13:18:10.367Z","author":{"@type":"Person","name":"Breynald"},"publisher":{"@type":"Organization","name":"Breynald Shelter","logo":{"@type":"ImageObject","url":"https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/img/logo.svg"}},"description":"一种新的基于自监督多层次对比学习的VQA自然语言解释模型 (MCLE)，该模型具有语义级、图像级和实例级的事实和反事实样本。MCLE提取判别特征，并将特征空间中的解释与视觉问题和答案对齐，以产生更一致的解释。作者进行了大量的实验和案例研究，以证明提出的方法在两个VQA-NLE基准上的有效性。"}</script><link rel="canonical" href="http://example.com/2024/12/25/mcle/"><link rel="icon" href="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/img/blog.svg"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link data-pjax rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link data-pjax rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/img/logo.svg" alt="Breynald Shelter" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="Catalogue" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="Search" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="https://t.mwm.moe/fj?random=mcle" alt="Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item">Posted&nbsp;<time dateTime="2024-12-25T13:14:49.000Z" title="12/25/2024, 1:14:49 PM">2024-12-25</time></span><span class="level-item"><a class="link-muted" href="/categories/Paper/">Paper</a><span> / </span><a class="link-muted" href="/categories/Paper/VQA/">VQA</a></span><span class="level-item">14 minutes read (About 2119 words)</span></div></div><h1 class="title is-3 is-size-4-mobile">Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA</h1><div class="content"><p>一种新的基于自监督多层次对比学习的VQA自然语言解释模型 (MCLE)，该模型具有语义级、图像级和实例级的事实和反事实样本。<br>MCLE提取判别特征，并将特征空间中的解释与视觉问题和答案对齐，以产生更一致的解释。作者进行了大量的实验和案例研究，以证明提出的方法在两个VQA-NLE基准上的有效性。</p>
+<span id="more"></span>
+
+<h1 id="Towards-More-Faithful-Natural-Language-Explanation-Using-Multi-Level-Contrastive-Learning-in-VQA"><a href="#Towards-More-Faithful-Natural-Language-Explanation-Using-Multi-Level-Contrastive-Learning-in-VQA" class="headerlink" title="Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA"></a>Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA</h1><p>Proceedings of the AAAI Conference on Artificial Intelligence, 2024</p>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>视觉问答中的自然语言解释（VQA-NLE）旨在通过生成自然语言句子来解释模型的决策过程，以增加用户对黑箱系统的信任。<br>现有的事后分析方法在获得合理解释方面取得了重大进展。<br>然而，这种事后解释并不总是与人类的逻辑推理相一致，存在以下问题：</p>
+<ol>
+<li><strong>演绎不满意</strong> (Deductive unsatisfiability)：产生的解释在逻辑上不能导致答案；</li>
+<li><strong>事实不一致</strong> (Factual inconsistency)：模型在不考虑图像中的事实的情况下对答案的反事实解释进行证伪；</li>
+<li><strong>语义扰动不敏感</strong> (Semantic perturbation insensitivity)：模型不能识别微小扰动引起的语义变化。</li>
+</ol>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225192400892.png" style="zoom:50%;" />
+</p>
+
+
+<p>这些问题降低了模型产生的解释的准确性。为了解决上述问题，作者提出了一种新的基于自监督多层次对比学习的VQA自然语言解释模型 (MCLE)，该模型具有语义级、图像级和实例级的事实和反事实样本。<br>MCLE提取判别特征，并将特征空间中的解释与视觉问题和答案对齐，以产生更一致的解释。作者进行了大量的实验和案例研究，以证明提出的方法在两个VQA-NLE基准上的有效性。</p>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>作者提出了基于多层次对比学习（MCLE）的自然语言解释框架。<br>MCLE 可以提高解释的可靠性，并加强解释与视觉问题答案之间的逻辑一致性。<br>整体架构如下图所示，其中 MCLE 包括一个视觉语言模型和一个具有语义级、图像级和实例级的多级对比学习网络。</p>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225192906485.png" style="zoom:70%;" />
+</p>
+
+<h3 id="问题定义"><a href="#问题定义" class="headerlink" title="问题定义"></a>问题定义</h3><p>给定一个图像 $V$ 和一个自然语言问题 $Q&#x3D;(q_1, q_2, …, q_n)$，$q_i$ 表示第 $i$ 个词。<br>VQA-NLE 目标是生成相应的带有答案的自由文本解释。</p>
+<h3 id="文本和图像表示"><a href="#文本和图像表示" class="headerlink" title="文本和图像表示"></a>文本和图像表示</h3><p>基于前人的工作，作者采用在图片说明任务上预训练的 GPT-2 作为视觉语言模型， CLIP 作为图像编码器。<br>问题特征 $Z_Q$ 由 GPT-2 中对应的词嵌入层得到。图像特征 $Z_V$ 由CLIP编码得到。</p>
+<h3 id="思维链生成"><a href="#思维链生成" class="headerlink" title="思维链生成"></a>思维链生成</h3><p>为了减少解释和可视化问答之间的不一致，为VQA-NLE引入了思维链生成，它可以模拟导致答案的基本原理，并为决策过程提供一个可解释的窗口。<br>为了激发模型生成解释和答案，自然语言 “because” 和 “so the answer is” 分别作为解释和答案的前缀。</p>
+<p>随后，从GPT-2的词嵌入层中得到前缀解释和前缀回答的特征，分别表示为 $Z_E$ 和 $Z_A$ ，连接后得到思维链特征 $Z_T&#x3D;[Z_E;Z_A]$ 。</p>
+<p>在训练过程中，所有输入作为一个序列输入到VL模型，通过交叉熵目标训练VL模型。</p>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225200023610.png" style="zoom:70%;" />
+</p>
+
+
+<p>与其他事后方法不同，本文的解释生成完全基于视觉问题，不涉及基于答案的伪造解释。<br>此外，生成的解释可以用来提示答案的生成，从而提高了VQA-NLE的逻辑一致性。</p>
+<h2 id="多层次对比学习网络"><a href="#多层次对比学习网络" class="headerlink" title="多层次对比学习网络"></a>多层次对比学习网络</h2><p>多层次对比学习网络由三个模块组成：SemanticCL、ImageCL和InstanceCL。<br>遵循序列到序列学习的对比学习框架，作者最大化锚点与正（事实）序列之间的相似性，同时最小化锚点与负（反事实）序列之间的相似性，如下所示：</p>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225200216277.png" style="zoom:70%;" />
+</p>
+
+
+<h3 id="SemanticCL"><a href="#SemanticCL" class="headerlink" title="SemanticCL"></a>SemanticCL</h3><p>为了指导VQA-NLE模型生成逻辑上导致答案的解释，作者设计了一个语义级CL模块 (SemanticCL)来学习解释和答案之间的关系。</p>
+<p>具体而言，将真实答案序列作为正样本 $H_A$，随机采样同一批次的K个非目标答案 $\hat{H_A}$ 序列作为负样本集，<br>并将视觉问题与解释相结合作为锚点。对比损失定义如下：</p>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225200650320.png" style="zoom:70%;" />
+</p>
+
+
+<h3 id="ImageCL"><a href="#ImageCL" class="headerlink" title="ImageCL"></a>ImageCL</h3><p>图像级CL模块 (ImageCL)旨在引导模型生成与视觉信息密切相关的解释，而不是仅根据问题伪造反事实解释。</p>
+<p>具体而言，将解释与答案的组合作为锚点，将带有问题的原始图像作为事实样本，将带有问题的反事实图像作为反事实样本。<br>在反事实图像采样过程中，首先计算原始样本与数据集中其他样本之间的分数：</p>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225201751298.png" style="zoom:70%;" />
+</p>
+
+<p>然后，选择得分最高的top-K样本中的图像作为反事实图像，这些图像与原始样本具有相似的问题，但答案不同，以引导模型感知视觉内容，消除语言偏见导致的事实不一致。</p>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225201832142.png" style="zoom:70%;" />
+</p>
+
+
+<p>通过训练，解释接近相应的图像，而远离反事实图像。通过这种方式，ImageCL可以帮助学习解释和图像之间的判别性特征。</p>
+<h3 id="InstanceCL"><a href="#InstanceCL" class="headerlink" title="InstanceCL"></a>InstanceCL</h3><p>为了帮助VQA-NLE模型感知由细粒度视觉或文本扰动引起的语义变化，作者设计了InstanceCL。采用Grad-CAM，通过以下函数推导出第$i$个对象和第$j$个单词对答案的贡献：</p>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225202240098.png" style="zoom:70%;" />
+</p>
+
+<p>如果分数越高，则对象或词对答案的贡献越大。根据这些贡献分数，收集得分最高的前k个对象和单词作为事实样本，而反事实样本是通过屏蔽相应的事实样本生成的。</p>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225202550648.png" style="zoom:70%;" />
+</p>
+
+<h3 id="整体损失"><a href="#整体损失" class="headerlink" title="整体损失"></a>整体损失</h3><p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225203300807.png" style="zoom:70%;" />
+</p>
+
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><p>对两个广泛使用的VQA-NLE基准进行了实证实验。<br>VQA-X是从VQA数据集中收集的，并为答案提供了额外的解释。<br>它由28K图像和33K问答对组成，分别分为29K&#x2F;1.4K&#x2F;1.9K用于训练、验证和测试。<br>A-OKVQA来自COCO数据集。<br>它包括大约25K个问题&#x2F;答案&#x2F;根本原因三元组，分别分为17.1K&#x2F;1.1K&#x2F;6.7K，用于训练、验证和测试。</p>
+<h3 id="评估指标"><a href="#评估指标" class="headerlink" title="评估指标"></a>评估指标</h3><ul>
+<li><strong>自动评估</strong>：利用BLUE、METEOR、ROUGE-L、SPICE和CIDEr等指标对生成的解释进行评估。预测的答案根据度量精度进行评估。</li>
+<li><strong>人工评估</strong>：确定每个生成的解释是否与答案一致，并从[yes, weak yes, weak no, no]中选择一个选项，分别对应得分[1, 2&#x2F;3, 1&#x2F;3, 0]。</li>
+</ul>
+<h3 id="主要结果"><a href="#主要结果" class="headerlink" title="主要结果"></a>主要结果</h3><p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225203907048.png" style="zoom:70%;" />
+</p>
+
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225204257658.png" style="zoom:70%;" />
+</p>
+
+
+<p>两个场景中都获得了最好的结果。这表明MCLE可以产生更可靠的解释。<br>关于答案的准确性，MCLE可以同时提高答案的准确性和相应的解释。MCLE在基线上的这些改进可归因于两个原因：</p>
+<ol>
+<li>MCLE采用具有思维链生成策略的解释-预测框架，可以模拟导致答案的基本原理；</li>
+<li>多层次对比学习网络能够学习高质量的表征，引导模型生成逻辑一致性解释。</li>
+</ol>
+<p>此外，作者还要求评估者选择VQA-X数据集上每个不合格解释的原因，在演绎不满意、事实不一致、语义扰动不敏感三个方面都达到了最低。</p>
+<p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225204644658.png" style="zoom:70%;" />
+</p>
+
+
+<h3 id="消融实验"><a href="#消融实验" class="headerlink" title="消融实验"></a>消融实验</h3><p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225204747892.png" style="zoom:70%;" />
+</p>
+
+<h3 id="案例分析"><a href="#案例分析" class="headerlink" title="案例分析"></a>案例分析</h3><p align = "center">
+<img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/mcle20241225204947036.png" style="zoom:70%;" />
+</p>
+
+
+</div><div class="article-licensing box"><div class="licensing-title"><p>Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA</p><p><a href="http://example.com/2024/12/25/mcle/">http://example.com/2024/12/25/mcle/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>Author</h6><p>Breynald</p></div></div><div class="level-item is-narrow"><div><h6>Posted on</h6><p>2024-12-25</p></div></div><div class="level-item is-narrow"><div><h6>Updated on</h6><p>2024-12-25</p></div></div><div class="level-item is-narrow"><div><h6>Licensed under</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Contrastive-Learning/">Contrastive Learning</a><a class="link-muted mr-2" rel="tag" href="/tags/VQA/">VQA</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2024/10/14/HuggingFace-datasets/"><span class="level-item">HuggingFace datasets</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">Comments</h3><script src="https://utteranc.es/client.js" repo="Breynald/Comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async></script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1 is-sticky"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/img/avatar.jpg" alt="Breynald"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Breynald</p><p class="is-size-6 is-block">Zhejiang University</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Hangzhou China</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">Posts</p><a href="/archives"><p class="title">12</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Categories</p><a href="/categories"><p class="title">7</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Tags</p><a href="/tags"><p class="title">10</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Breynald" target="_blank" rel="me noopener">Follow</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="me noopener" title="Github" href="https://github.com/Breynald"><i class="fab fa-github"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="me noopener" title="Email" href="mailto:breynald@zju.edu.cn"><i class="fas fa-envelope"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">Catalogue</h3><ul class="menu-list"><li><a class="level is-mobile" href="#Towards-More-Faithful-Natural-Language-Explanation-Using-Multi-Level-Contrastive-Learning-in-VQA"><span class="level-left"><span class="level-item">1</span><span class="level-item">Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA</span></span></a></li><li><a class="level is-mobile" href="#摘要"><span class="level-left"><span class="level-item">2</span><span class="level-item">摘要</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#方法"><span class="level-left"><span class="level-item">2.1</span><span class="level-item">方法</span></span></a></li><li><a class="level is-mobile" href="#多层次对比学习网络"><span class="level-left"><span class="level-item">2.2</span><span class="level-item">多层次对比学习网络</span></span></a></li><li><a class="level is-mobile" href="#实验"><span class="level-left"><span class="level-item">2.3</span><span class="level-item">实验</span></span></a></li></ul></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">Categories</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/Bugs/"><span class="level-start"><span class="level-item">Bugs</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Code-Piece/"><span class="level-start"><span class="level-item">Code Piece</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/Environment-Configuration/"><span class="level-start"><span class="level-item">Environment Configuration</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/Paper/"><span class="level-start"><span class="level-item">Paper</span></span><span class="level-end"><span class="level-item tag">7</span></span></a><ul><li><a class="level is-mobile" href="/categories/Paper/Diffusion-Model/"><span class="level-start"><span class="level-item">Diffusion Model</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/categories/Paper/Humor/"><span class="level-start"><span class="level-item">Humor</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Paper/VQA/"><span class="level-start"><span class="level-item">VQA</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">Recents</h3><article class="media"><figure class="media-left"><a class="image" href="/2024/12/25/mcle/"><img src="https://t.mwm.moe/fj?random=mcle" alt="Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA"></a></figure><div class="media-content"><p class="date"><time dateTime="2024-12-25T13:14:49.000Z">2024-12-25</time></p><p class="title"><a href="/2024/12/25/mcle/">Towards More Faithful Natural Language Explanation Using Multi-Level Contrastive Learning in VQA</a></p><p class="categories"><a href="/categories/Paper/">Paper</a> / <a href="/categories/Paper/VQA/">VQA</a></p></div></article><article class="media"><figure class="media-left"><a class="image" href="/2024/10/14/HuggingFace-datasets/"><img src="https://t.mwm.moe/fj?random=HuggingFace-datasets" alt="HuggingFace datasets"></a></figure><div class="media-content"><p class="date"><time dateTime="2024-10-14T15:28:11.000Z">2024-10-14</time></p><p class="title"><a href="/2024/10/14/HuggingFace-datasets/">HuggingFace datasets</a></p><p class="categories"><a href="/categories/Code-Piece/">Code Piece</a></p></div></article><article class="media"><figure class="media-left"><a class="image" href="/2024/10/12/The-Psychological-Process-of-Humor-Discourse-Comprehension-and-Audience-Response/"><img src="https://t.mwm.moe/fj?random=The Psychological Process of Humor Discourse Comprehension and Audience Response" alt="幽默语篇生成与理解的社会心理阐释"></a></figure><div class="media-content"><p class="date"><time dateTime="2024-10-12T16:21:04.000Z">2024-10-12</time></p><p class="title"><a href="/2024/10/12/The-Psychological-Process-of-Humor-Discourse-Comprehension-and-Audience-Response/">幽默语篇生成与理解的社会心理阐释</a></p><p class="categories"><a href="/categories/Paper/">Paper</a> / <a href="/categories/Paper/Humor/">Humor</a></p></div></article><article class="media"><figure class="media-left"><a class="image" href="/2024/10/01/Docker-container-configuration/"><img src="https://t.mwm.moe/fj?random=Docker container configuration" alt="Docker container configuration"></a></figure><div class="media-content"><p class="date"><time dateTime="2024-10-01T13:46:11.000Z">2024-10-01</time></p><p class="title"><a href="/2024/10/01/Docker-container-configuration/">Docker container configuration</a></p><p class="categories"><a href="/categories/Environment-Configuration/">Environment Configuration</a></p></div></article><article class="media"><figure class="media-left"><a class="image" href="/2024/09/28/Inversion-based-Style-Transfer-with-Diffusion-Models/"><img src="https://t.mwm.moe/fj?random=Inversion-based Style Transfer with Diffusion Models" alt="Inversion-based Style Transfer with Diffusion Models"></a></figure><div class="media-content"><p class="date"><time dateTime="2024-09-28T13:43:49.000Z">2024-09-28</time></p><p class="title"><a href="/2024/09/28/Inversion-based-Style-Transfer-with-Diffusion-Models/">Inversion-based Style Transfer with Diffusion Models</a></p><p class="categories"><a href="/categories/Paper/">Paper</a> / <a href="/categories/Paper/Diffusion-Model/">Diffusion Model</a></p></div></article></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">Tags</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/Bugs/"><span class="tag">Bugs</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Contrastive-Learning/"><span class="tag">Contrastive Learning</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Diffusion-Model/"><span class="tag">Diffusion Model</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Docker/"><span class="tag">Docker</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Driving-Video-Deneration/"><span class="tag">Driving Video Deneration</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/HuggingFace/"><span class="tag">HuggingFace</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Humor/"><span class="tag">Humor</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Personalization/"><span class="tag">Personalization</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Survey/"><span class="tag">Survey</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/VQA/"><span class="tag">VQA</span><span class="tag">1</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="https://raw.githubusercontent.com/Breynald/ImageSource/main/blogs/img/logo.svg" alt="Breynald Shelter" height="28"></a><p class="is-size-7"><span>&copy; 2024 Breynald</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="GitHub" href="https://github.com/Breynald"><i class="fab fa-github"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Email" href="mailto:breynald@zju.edu.cn"><i class="fas fa-envelope"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("en");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script data-pjax src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="Back to top" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script data-pjax src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "This website uses cookies to improve your experience.",
+          dismiss: "Got it!",
+          allow: "Allow cookies",
+          deny: "Decline",
+          link: "Learn more",
+          policy: "Cookie Policy",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/javascript" id="MathJax-script" async>MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      },
+      chtml: {
+        matchFontHeight: false
+      }
+    };</script><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script src="/js/pjax.js"></script><!--!--><!--!--><!--!--><script data-pjax src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="Type something..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"Type something...","untitled":"(Untitled)","posts":"Posts","pages":"Pages","categories":"Categories","tags":"Tags"});
+        });</script></body></html>
