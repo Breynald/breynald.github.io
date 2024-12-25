@@ -35,7 +35,7 @@
     // })
     
 	// listen pjax:end event in pjax.js
-    document.addEventListener('pjax:end', function () {
+    document.addEventListener('pjax:complete', function () {
         // MathJax is global, can be used directly
         MathJax.typesetPromise();
     });
