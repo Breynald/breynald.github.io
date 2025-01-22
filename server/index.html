@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BreyServer Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .main {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #eee;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .service {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .status.active {
+            color: green;
+        }
+        .status.inactive {
+            color: red;
+        }
+        .status-history {
+            display: flex;
+            flex-wrap: wrap-reverse;
+        }
+        .status-history .day {
+            width: calc(100% / 120 - 4px);
+            height: 20px;
+            margin: 2px;
+            border-radius: 3px;
+            position: relative;
+        }
+        .status-history .day.active {
+            background-color: green;
+        }
+        .status-history .day.inactive {
+            background-color: red;
+        }
+        .status-history .day:hover::after {
+            content: attr(data-date) " - " attr(data-status);
+            position: absolute;
+            top: -25px;
+            left: 0;
+            background: #333;
+            color: #fff;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <h1>Server Status</h1>
+        <p>Below is the running status of various server services:</p>
+        <ul id="services-list">
+            <!-- Services will be dynamically added here -->
+        </ul>
+    </div>
+    <script>
+        const serviceNames = {
+            "cloudreve": "Breycloud",
+            "pzserver": "Project Zomboid Server",
+            "mcserver": "Minecraft Server",
+            "zerotier-one": "BreyVPN",
+            "ts": "Teamspeak",
+            "valheim": "Valheim Server"
+        };
+
+        async function fetchStatusData() {
+            const response = await fetch('https://raw.githubusercontent.com/Breynald/StatusCheck/refs/heads/main/status_log.json');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        }
+
+        function generateStatusHistory(serviceId, statusId, history) {
+            const container = document.getElementById(serviceId);
+            const statusElement = document.getElementById(statusId);
+            let latestStatus = 'inactive';
+            history.forEach((entry, index) => {
+                const status = entry.status;
+                const div = document.createElement('div');
+                div.className = `day ${status}`;
+                div.setAttribute('data-date', entry.timestamp);
+                div.setAttribute('data-status', status.charAt(0).toUpperCase() + status.slice(1));
+                container.appendChild(div);
+                if (index === history.length - 1) {
+                    latestStatus = status;
+                }
+            });
+            statusElement.textContent = latestStatus.charAt(0).toUpperCase() + latestStatus.slice(1);
+            statusElement.className = `status ${latestStatus}`;
+        }
+
+        function loadServices(data) {
+            const servicesList = document.getElementById('services-list');
+            Object.keys(data).forEach(serviceKey => {
+                const serviceName = serviceNames[serviceKey];
+                const serviceId = `${serviceKey}-history`;
+                const statusId = `${serviceKey}-status`;
+                const serviceItem = document.createElement('li');
+                serviceItem.className = 'service';
+                serviceItem.innerHTML = `
+                    <span>${serviceName}</span>
+                    <span class="status" id="${statusId}">Loading...</span>
+                    <div class="status-history" id="${serviceId}"></div>
+                `;
+                servicesList.appendChild(serviceItem);
+                generateStatusHistory(serviceId, statusId, data[serviceKey]);
+            });
+        }
+
+        fetchStatusData()
+            .then(data => loadServices(data))
+            .catch(error => console.error('Error fetching status data:', error));
+    </script>
+</body>
+</html>
