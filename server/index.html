@@ -2,7 +2,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>BreyServer Info</title>
+    <title>BreyServer</title>
+    <link rel="icon" type="image/svg+xml" href="server.svg">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,33 +17,147 @@
             padding: 20px;
             background-color: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
         }
         h1 {
             color: #333;
+            text-align: center;
+            font-size: 2.5em;
+            display: flex;
+            flex-direction: column;  /* 改为纵向布局 */
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 30px;    /* 增加底部间距 */
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
         }
         ul {
             list-style-type: none;
             padding: 0;
         }
         li {
-            background: #eee;
-            margin: 5px 0;
-            padding: 10px;
-            border-radius: 5px;
+            list-style-type: none;
+            margin: 10px 0;
+            padding: 0;  /* 移除默认内边距 */
+            transition: transform 0.2s ease;
+        }
+        li:hover {
+            /* 移除背景色变化 */
+            background: none;
         }
         .service {
             display: flex;
-            justify-content: space-between;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;          /* 统一间距 */
+            position: relative;
+            padding: 20px;
+            background: white;        /* 添加白色背景 */
+            border-radius: 8px;       /* 添加圆角 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);  /* 添加阴影 */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .service:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            /* 移除背景色变化 */
+        }
+        .service-icon-container {
+            flex-shrink: 0;
+            width: 100px;        /* 增加容器整体尺寸 */
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;          /* 移除内边距 */
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;    /* 防止图片溢出圆角 */
+        }
+        .service-icon {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;   /* 改为cover确保填满容器 */
+            padding: 0;         /* 确保没有内边距 */
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);  /* 匹配容器过渡 */
+        }
+        .service-icon-container:hover {    /* 将悬停效果移到容器上 */
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);  /* 更明显的阴影效果 */
+        }
+        .service-content {
+            flex-grow: 1;
+            display: flex;
             flex-direction: column;
+            gap: 8px;
+            padding: 5px 0;
         }
         .status {
             font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
+
+        .status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
         .status.active {
-            color: green;
+            color: #2ecc71;
         }
+
+        .status.active::before {
+            background-color: #2ecc71;
+            animation: pulse 2s infinite;  /* 只在在线状态时显示脉冲 */
+            box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+        }
+
         .status.inactive {
-            color: red;
+            color: #e74c3c;
+        }
+
+        .status.inactive::before {
+            background-color: #e74c3c;
+            /* 移除动画 */
+        }
+
+        .status-history .day.active {
+            background-color: #2ecc71;  /* 匹配状态指示器的绿色 */
+        }
+
+        .status-history .day.inactive {
+            background-color: #e74c3c;  /* 匹配状态指示器的红色 */
+        }
+
+        /* 修改脉冲动画，只用于活跃状态 */
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(46, 204, 113, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+            }
         }
         .status-history {
             display: flex;
@@ -54,43 +169,297 @@
             margin: 2px;
             border-radius: 3px;
             position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;  /* 添加过渡效果 */
         }
+
+        .status-history .day:hover {
+            transform: translateY(-2px);  /* 悬停时轻微上浮 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);  /* 添加阴影效果 */
+            z-index: 1;  /* 确保悬停的元素在上层 */
+        }
+
         .status-history .day.active {
-            background-color: green;
+            background-color: #2ecc71;  /* 使用相同的明亮绿色 */
         }
+
         .status-history .day.inactive {
-            background-color: red;
+            background-color: #e74c3c;  /* 使用相同的明亮红色 */
         }
+
         .status-history .day:hover::after {
             content: attr(data-date) " - " attr(data-status);
             position: absolute;
-            top: -25px;
-            left: 0;
+            top: -30px;  /* 稍微调整提示框位置 */
+            left: 50%;
+            transform: translateX(-50%);  /* 居中提示框 */
             background: #333;
             color: #fff;
-            padding: 2px 5px;
-            border-radius: 3px;
+            padding: 4px 8px;
+            border-radius: 4px;
             font-size: 12px;
             white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);  /* 为提示框添加阴影 */
+            z-index: 2;
         }
+        .server-info {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .server-info h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));  /* 调整最小宽度 */
+            gap: 20px;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .config-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+
+        .config-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .config-value {
+            color: #34495e;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95em;
+            text-align: center;
+        }
+
+        .config-item.storage .storage-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.4em;       /* 稍微调小字体 */
+            color: #2ecc71;
+            font-weight: normal;
+            margin-top: -5px;       /* 微调与标题的间距 */
+        }
+
+        .status-dot {
+            width: 8px;       /* 减小点的大小 */
+            height: 8px;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+            margin-bottom: 1px; /* 微调垂直对齐 */
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(46, 204, 113, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+            }
+        }
+
+        .service-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .service:hover .service-name {
+            color: #34495e;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.05);
+        }
+
+        .config-item.storage {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .storage-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .storage-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-left: 15px;
+        }
+
+        .storage-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .storage-type {
+            color: #7f8c8d;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #2c3e50;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background-color: #34495e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .back-button::before {
+            content: '<';
+            font-size: 1.2em;
+        }
+
+        .server-status {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .server-status h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+        }
+
+        .server-status p {
+            margin-bottom: 20px;
+            color: #666;
+            text-align: center;
+            font-size: 0.95em;
+        }
+
+        /* 移除 .services-container 相关样式 */
     </style>
 </head>
 <body>
+    <a href="/" class="back-button">Back</a>
     <div class="main">
-        <h1>Server Status</h1>
-        <p>Below is the running status of various server services:</p>
-        <ul id="services-list">
-            <!-- Services will be dynamically added here -->
-        </ul>
+        <h1>
+            <span>Basestation-001</span>
+            <span class="status-indicator">
+                <span class="status-dot"></span>
+                Running
+            </span>
+        </h1>
+        <div class="server-info">
+            <h2>Server Configuration</h2>
+            <div class="config-grid">
+                <div class="config-item">
+                    <span class="config-label">CPU</span>
+                    <span class="config-value">Intel Xeon W-1370</span>
+                </div>
+                <div class="config-item">
+                    <span class="config-label">MB</span>
+                    <span class="config-value">Gigabyte W480M VISION W</span>
+                </div>
+                <div class="config-item">
+                    <span class="config-label">RAM</span>
+                    <span class="config-value">Samsung 32G * 2 ECC UDIMM</span>
+                </div>
+                <div class="config-item storage">
+                    <span class="storage-title">Storage</span>
+                    <div class="storage-details">
+                        <div class="storage-item">
+                            <span class="storage-type">SSD:</span>
+                            <span class="config-value">Predator m.2 1T</span>
+                        </div>
+                        <div class="storage-item">
+                            <span class="storage-type">RAID 0:</span>
+                            <span class="config-value">SkyHawk 4T * 2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="server-status">
+            <h2>Server Status</h2>
+            <p>Below is the running status of various server services:</p>
+            <ul id="services-list">
+                <!-- Services will be dynamically added here -->
+            </ul>
+        </div>
     </div>
     <script>
         const serviceNames = {
-            "cloudreve": "Breycloud",
+            "cloudreve": "BreyCloud",
             "pzserver": "Project Zomboid Server",
             "mcserver": "Minecraft Server",
             "zerotier-one": "BreyVPN",
             "ts": "Teamspeak",
             "valheim": "Valheim Server"
+        };
+
+        const serviceIcons = {
+            "cloudreve": "cloudreve.png",
+            "pzserver": "pzserver.png",
+            "mcserver": "mcserver.png",
+            "zerotier-one": "zerotier-one.png",
+            "ts": "ts.png",
+            "valheim": "valheim.png"
         };
 
         async function fetchStatusData() {
@@ -129,9 +498,14 @@
                 const serviceItem = document.createElement('li');
                 serviceItem.className = 'service';
                 serviceItem.innerHTML = `
-                    <span>${serviceName}</span>
-                    <span class="status" id="${statusId}">Loading...</span>
-                    <div class="status-history" id="${serviceId}"></div>
+                    <div class="service-icon-container">
+                        <img src="${serviceIcons[serviceKey]}" class="service-icon" alt="${serviceName} icon">
+                    </div>
+                    <div class="service-content">
+                        <span class="service-name">${serviceName}</span>
+                        <span class="status" id="${statusId}">Loading...</span>
+                        <div class="status-history" id="${serviceId}"></div>
+                    </div>
                 `;
                 servicesList.appendChild(serviceItem);
                 generateStatusHistory(serviceId, statusId, data[serviceKey]);
